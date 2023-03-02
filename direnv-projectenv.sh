@@ -42,7 +42,7 @@ use_java() {
   load_prefix "$java_prefix"
   export JAVA_HOME="$java_prefix"
 
-  log_status "Successfully loaded Java $(java --version), from JAVA_HOME='$java_prefix'"
+  log_status "Successfully loaded Java version '$(java -version | head -1)' from JAVA_HOME='$java_prefix'"
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -90,17 +90,59 @@ __use_java_from_env_vars_default_sdkman() {
     return 1
   fi
 
-  # use JAVA_VERSIONS if set, otherwise auto-detect `sdkman.io` java versions directory
+  local found_version
+  local install_hint="install the correct JDK and run $ direnv reload"
+  local java_vendors="${PROJECT_JAVA_VENDORS:-coretto liberica temurin openjdk azul}"
+
+  # use JAVA_VERSIONS if set,
   if [[ -n "${JAVA_VERSIONS:-}" ]]; then
     export JAVA_VERSIONS="$JAVA_VERSIONS"
-  elif [[ -n "$SDKMAN_CANDIDATES_DIR" ]]; then
-    export JAVA_VERSION_PREFIX=""
-    export JAVA_VERSIONS="${SDKMAN_CANDIDATES_DIR}/java"
+
+  # otherwise auto-detect `sdkman.io` java versions directory
+  elif [[ -n "${SDKMAN_CANDIDATES_DIR:-}" ]]; then
+    install_hint="run $ sdk install java ${JAVA_VERSION} && direnv reload"
+    # check if it will work before exporting
+    found_version="$(semver_search "$JAVA_VERSIONS" "$JAVA_VERSION_PREFIX" "$JAVA_VERSION")"
+    if [[ -n "$found_version" ]]; then
+      export JAVA_VERSION_PREFIX=""
+      export JAVA_VERSIONS="${SDKMAN_CANDIDATES_DIR:-}/java"
+    else
+      unset JAVA_VERSIONS
+    fi
+  fi
+
+  # otherwise, if on a Mac, check the Library (its where IntelliJ installs JDKs)
+  if [[ -z "$found_version" && "$(uname)" = "Darwin" ]]; then
+    export JAVA_VERSIONS="${HOME}/Library/Java/JavaVirtualMachines"
+    for vendor in $java_vendors; do
+      pkg_prefix="${vendor}-"
+      found_version="$(semver_search "$JAVA_VERSIONS" "$pkg_prefix" "$JAVA_VERSION")"
+      if [[ -n "$found_version" ]]; then
+        export JAVA_VERSION_PREFIX="$pkg_prefix"
+        break
+      else
+        unset JAVA_VERSIONS
+      fi
+    done
+  fi
+
+  # otherwise, check the linux default installation locations
+  #  /usr/lib/jvm/java-17-oracle/bin/java
+  if [[ -z "$found_version" && "$(uname)" = "Linux" ]]; then
+    install_hint="run $ sdk install java ${JAVA_VERSION} && direnv reload"
+    export JAVA_VERSIONS="/usr/lib/jvm/"
+    pkg_prefix="java-"
+    found_version="$(semver_search "$JAVA_VERSIONS" "$pkg_prefix" "$JAVA_VERSION")"
+    if [[ -n "$found_version" ]]; then
+      export JAVA_VERSION_PREFIX="$pkg_prefix"
+    else
+      unset JAVA_VERSIONS
+    fi
   fi
 
   # use the built-in function to load java, but detect error to log an additional hint
   if ! use java "$JAVA_VERSION"; then
-    log_status "HINT: run $ sdk install java ${JAVA_VERSION} && direnv reload"
+    log_status "HINT: ${install_hint}"
     return 1
   fi
 }

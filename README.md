@@ -27,17 +27,22 @@ tested/supported envs:
 
     direnv allow .
 
-* if something went wrong, run
+* if something **went wrong**, run
 
     direnv reload
 
-* if that did not fix it, see debug info to see whats up
-    direnv direnv status
+* if that did not fix it, see **debug info** to see whats up
+
+    direnv status
+
+* if that did not fix it, see **debug info** to see whats up
+
+    direnv block
 
 * how to update the helper scripts for your project
 
-* clone the script repo, e.g. git clone …
-* replace the "fetch srcipt" line with `. ~/path/to/your/sripts/repo`
-* ensure that everything is working
+  * clone the script repo, e.g. git clone …
+  * replace the "fetch srcipt" line with `. ~/path/to/your/sripts/repo`
+  * ensure that everything is working
 
-    direnv allow # allow your changes, and reload the env
+        direnv allow # allow your changes, and reload the env
