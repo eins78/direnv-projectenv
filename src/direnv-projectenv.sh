@@ -112,8 +112,14 @@ __use_java_from_env_vars_default_sdkman() {
 layout_project() {
   local project_env_file="${1:-TOOL_VERSIONS.env}"
   __set_tool_versions_from_envfile "$project_env_file"
+
+  if [[ -f "package.json" ]]; then
   __use_node_from_env_vars_default_nvm
+  fi
+
+  if [[ -f "pom.xml" ]]; then
   __use_java_from_env_vars_default_sdkman
+  fi
 
   # IMPORTANT: load the (optional) local .env files last, to make sure it cant interfer with the other config
   # (the .env file is only supposed to contain env vars for the application, not for tools and platforms).
