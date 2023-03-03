@@ -10,6 +10,16 @@ principles:
 * fail and warn if something goes wrong and dont block the shell prompt
 * do not manage or install versions
 * detect version manager installations (`nvm`, `sdk`) but do not call them (just use their env var/and or default installation directories)
+# development
+
+## linting
+
+<shellcheck.net> is used to lint the shell script.
+
+```sh
+npm i # currently calls your local package manager to install
+npm run lint
+```
 
 ## work in progress
 

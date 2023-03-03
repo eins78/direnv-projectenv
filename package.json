@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "lint": "shellcheck src/*.sh",
+    "postinstall": "for P in brew cabal apt dnf pkg; do $P install shellcheck && break; done"
+  }
+}
