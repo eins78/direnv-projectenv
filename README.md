@@ -7,7 +7,7 @@ inspired by [direnv-helpers](https://github.com/steve-ross/direnv-helpers/), but
 
 principles:
 
-* support node.js and Java in a simple, opinionated way
+* support node.js and Java as simply as possible (be opinionated if neccessary)
 * set all tool versions from ".env" files (aka dotenv)
 * fail and warn if something goes wrong and dont block the shell prompt
 * do not manage or install versions
